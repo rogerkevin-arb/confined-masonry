@@ -450,6 +450,7 @@ if tarea == "Segmentación de Grietas":
             1. BRE Digest 251. Driscoll, R. (1995). *Assessment of Damage in Low-Rise Buildings, with Particular Reference to Progressive Foundation Movement*, United Kingdom.
 
             2. Astroza, M. y Figueroa, S. (2000). *Escalas para calificar los daños sísmicos en los muros de edificios de albañilería*. XXIX Jornadas Sudamericanas de Ingeniería Estructural, Montevideo, Uruguay.
+
             """)
 
 
@@ -1070,4 +1071,16 @@ elif tarea == "Detección de Muros Confinados":
 
                 st.markdown(f"### Muro Confinado {i} - {clase} ({score:.2f})")
                 st.image(crop, width=800)
+
+
+        st.markdown("---")
+
+        st.markdown("#### Referencias usadas para la tabla y YOLO11l :")
+
+        st.markdown("""
+        1. C. y S. Ministerio de Vivienda, “Norma Técnica E.070 Albañilería,” Lima, Perú, 2020.
+        
+        2. Ultralytics YOLO11 | Ultralytics Docs,” Ultralytics Docs. 
+
+        """)
 
