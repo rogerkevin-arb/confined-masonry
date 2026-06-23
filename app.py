@@ -1009,7 +1009,6 @@ elif tarea == "Detección de Muros Confinados":
         # GRÁFICO BARRAS (CENTRADO)
         # =========================
         st.markdown("#### Gráfico de barras : Grado de esbeltez (L/H)")
-        st.markdown("Estos valores son medidas referenciales en base al paño extraído por las cajas delimitadoras")
         col1, col2, col3 = st.columns([1, 3, 1])
 
         with col2:
