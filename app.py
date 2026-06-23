@@ -320,17 +320,29 @@ if tarea == "Segmentación de Grietas":
                 st.image(mask * 255, caption=f"Máscara predicha (umbral: {umbral})", use_container_width=True)
 
             # Mapa de ancho de grietas
+            colored = np.zeros((*crack_width_map.shape, 4))  # RGBA blanco transparente
+            norm = plt.Normalize(vmin=crack_width_map.min(), vmax=crack_width_map.max())
+            cmap = plt.cm.jet
+            
+            mask = crack_width_map > 0
+            
+            colored[mask] = cmap(norm(crack_width_map[mask]))
+            
             fig_width, ax_width = plt.subplots(figsize=(5, 4))
-            im = ax_width.imshow(crack_width_map, cmap='jet')
-            ax_width.scatter(max_idx[1], max_idx[0], color='white', s=80, edgecolors='black', label='Ancho máximo')
-            ax_width.set_title("Mapa de ancho de grietas")
+            fig_width.patch.set_facecolor('white')
+            ax_width.set_facecolor('white')
+            
+            ax_width.imshow(colored)
+            
+            ax_width.scatter(max_idx[1], max_idx[0],
+                             color='white', s=80,
+                             edgecolors='black',
+                             label='Ancho máximo')
+            
             ax_width.axis('off')
-            plt.colorbar(im, ax=ax_width, fraction=0.046, pad=0.04, label='Ancho (píxeles)')
             ax_width.legend()
-
-            buf_width = io.BytesIO()
-            plt.tight_layout()
-            plt.savefig(buf_width, format="png")
+            
+            plt.savefig(buf_width, format="png", facecolor='white', bbox_inches='tight')
             plt.close(fig_width)
 
             # Preparar imagen de escala
@@ -623,17 +635,29 @@ if tarea == "Segmentación de Grietas":
             # ==================================================
 
             # Mapa de ancho de grietas
+            colored = np.zeros((*crack_width_map.shape, 4))  # RGBA blanco transparente
+            norm = plt.Normalize(vmin=crack_width_map.min(), vmax=crack_width_map.max())
+            cmap = plt.cm.jet
+            
+            mask = crack_width_map > 0
+            
+            colored[mask] = cmap(norm(crack_width_map[mask]))
+            
             fig_width, ax_width = plt.subplots(figsize=(5, 4))
-            im = ax_width.imshow(crack_width_map, cmap='jet')
-            ax_width.scatter(max_idx[1], max_idx[0], color='white', s=80, edgecolors='black', label='Ancho máximo')
-            ax_width.set_title("Mapa de ancho de grietas")
+            fig_width.patch.set_facecolor('white')
+            ax_width.set_facecolor('white')
+            
+            ax_width.imshow(colored)
+            
+            ax_width.scatter(max_idx[1], max_idx[0],
+                             color='white', s=80,
+                             edgecolors='black',
+                             label='Ancho máximo')
+            
             ax_width.axis('off')
-            plt.colorbar(im, ax=ax_width, fraction=0.046, pad=0.04, label='Ancho (píxeles)')
             ax_width.legend()
-
-            buf_width = io.BytesIO()
-            plt.tight_layout()
-            plt.savefig(buf_width, format="png")
+            
+            plt.savefig(buf_width, format="png", facecolor='white', bbox_inches='tight')
             plt.close(fig_width)
 
             # Escala verde
