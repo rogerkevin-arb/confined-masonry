@@ -320,30 +320,46 @@ if tarea == "Segmentación de Grietas":
                 st.image(mask * 255, caption=f"Máscara predicha (umbral: {umbral})", use_container_width=True)
 
             # Mapa de ancho de grietas
-            colored = np.zeros((*crack_width_map.shape, 4))  # RGBA blanco transparente
-            norm = plt.Normalize(vmin=crack_width_map.min(), vmax=crack_width_map.max())
-            cmap = plt.cm.jet
-            
-            mask = crack_width_map > 0
-            
-            colored[mask] = cmap(norm(crack_width_map[mask]))
+            buf_width = BytesIO()
             
             fig_width, ax_width = plt.subplots(figsize=(5, 4))
+            
             fig_width.patch.set_facecolor('white')
             ax_width.set_facecolor('white')
             
+            # ===== seguridad contra mapas vacíos =====
+            if np.max(crack_width_map) > 0:
+                norm = plt.Normalize(
+                    vmin=np.min(crack_width_map[crack_width_map > 0]),
+                    vmax=np.max(crack_width_map)
+                )
+            else:
+                norm = plt.Normalize(0, 1)
+            
+            cmap = plt.cm.jet
+            
+            mask_crack = crack_width_map > 0
+            
+            colored = np.zeros((*crack_width_map.shape, 4))
+            colored[mask_crack] = cmap(norm(crack_width_map[mask_crack]))
+            
             ax_width.imshow(colored)
             
-            ax_width.scatter(max_idx[1], max_idx[0],
-                             color='white', s=80,
-                             edgecolors='black',
-                             label='Ancho máximo')
+            ax_width.scatter(
+                max_idx[1], max_idx[0],
+                color='white',
+                s=80,
+                edgecolors='black',
+                label='Ancho máximo'
+            )
             
             ax_width.axis('off')
             ax_width.legend()
             
-            plt.savefig(buf_width, format="png", facecolor='white', bbox_inches='tight')
+            fig_width.savefig(buf_width, format="png", facecolor='white', bbox_inches='tight')
             plt.close(fig_width)
+            
+            buf_width.seek(0)
 
             # Preparar imagen de escala
             caption_escala = "Escala detectada" if escala_detectada else "Escala no detectada"
@@ -635,30 +651,39 @@ if tarea == "Segmentación de Grietas":
             # ==================================================
 
             # Mapa de ancho de grietas
-            colored = np.zeros((*crack_width_map.shape, 4))  # RGBA blanco transparente
-            norm = plt.Normalize(vmin=crack_width_map.min(), vmax=crack_width_map.max())
+
+            if np.max(crack_width_map) > 0:
+                norm = plt.Normalize(
+                    vmin=np.min(crack_width_map[crack_width_map > 0]),
+                    vmax=np.max(crack_width_map)
+                )
+            else:
+                norm = plt.Normalize(0, 1)
+            
             cmap = plt.cm.jet
             
-            mask = crack_width_map > 0
+            mask_crack = crack_width_map > 0
             
-            colored[mask] = cmap(norm(crack_width_map[mask]))
-            
-            fig_width, ax_width = plt.subplots(figsize=(5, 4))
-            fig_width.patch.set_facecolor('white')
-            ax_width.set_facecolor('white')
+            colored = np.zeros((*crack_width_map.shape, 4))
+            colored[mask_crack] = cmap(norm(crack_width_map[mask_crack]))
             
             ax_width.imshow(colored)
             
-            ax_width.scatter(max_idx[1], max_idx[0],
-                             color='white', s=80,
-                             edgecolors='black',
-                             label='Ancho máximo')
+            ax_width.scatter(
+                max_idx[1], max_idx[0],
+                color='white',
+                s=80,
+                edgecolors='black',
+                label='Ancho máximo'
+            )
             
             ax_width.axis('off')
             ax_width.legend()
             
-            plt.savefig(buf_width, format="png", facecolor='white', bbox_inches='tight')
+            fig_width.savefig(buf_width, format="png", facecolor='white', bbox_inches='tight')
             plt.close(fig_width)
+            
+            buf_width.seek(0)
 
             # Escala verde
             caption_escala = "Escala detectada" if escala_detectada else "Escala no detectada"
