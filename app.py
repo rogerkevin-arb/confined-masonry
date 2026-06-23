@@ -13,6 +13,9 @@ from io import BytesIO
 from ultralytics import YOLO
 import gc
 
+import tensorflow.keras.backend as K
+import matplotlib.cm as cm
+
 gc.collect()
 tf.keras.backend.clear_session()
 
@@ -52,6 +55,44 @@ model_clasificador_grieta = cargar_clasificador_grieta()
 model_detector_murosc = cargar_detector_murosc()
 model_clasificador_ladrillo = cargar_clasificador_ladrillo()
 
+
+
+
+# ==================================================
+# FUNCION GRAD - CAM
+# ==================================================
+
+
+def make_gradcam_heatmap(img_array, model, last_conv_layer_name):
+    grad_model = tf.keras.models.Model(
+        [model.inputs],
+        [model.get_layer(last_conv_layer_name).output, model.output]
+    )
+
+    with tf.GradientTape() as tape:
+        conv_outputs, predictions = grad_model(img_array)
+        loss = predictions[:, 0]
+
+    grads = tape.gradient(loss, conv_outputs)
+    pooled_grads = tf.reduce_mean(grads, axis=(0, 1, 2))
+
+    conv_outputs = conv_outputs[0]
+    heatmap = conv_outputs @ pooled_grads[..., tf.newaxis]
+    heatmap = tf.squeeze(heatmap)
+
+    heatmap = tf.maximum(heatmap, 0) / tf.math.reduce_max(heatmap)
+
+    return heatmap.numpy()
+
+
+def overlay_gradcam(img, heatmap, alpha=0.4):
+    heatmap = cv2.resize(heatmap, (img.shape[1], img.shape[0]))
+    heatmap = np.uint8(255 * heatmap)
+    heatmap = cv2.applyColorMap(heatmap, cv2.COLORMAP_JET)
+    overlay = cv2.addWeighted(img, 1 - alpha, heatmap, alpha, 0)
+
+    overlay = cv2.cvtColor(overlay, cv2.COLOR_BGR2RGB)
+    return overlay
 
 # ==================================================
 # FUNCIONES PARA FOTOS TOMADAS A MAYOR DISTANCIA
@@ -208,6 +249,12 @@ if tarea == "Segmentación de Grietas":
                 prediction = prediction[:, :, 0]
             mask = (prediction > umbral).astype(np.uint8)
 
+            # Grad CAM
+            img_array = img_input.copy()
+            heatmap = make_gradcam_heatmap(img_array, model_clasificador_grieta,last_conv_layer_name="conv_pw_13_relu")
+            gradcam_img = overlay_gradcam(np.array(resized_image), heatmap)
+
+            
             # Esqueletización
             skeleton = skeletonize(mask).astype(np.uint8)
             dist_transform = cv2.distanceTransform(mask, cv2.DIST_L2, 5)
@@ -262,11 +309,17 @@ if tarea == "Segmentación de Grietas":
             # SECCIÓN 1
             # ==================================================
 
-            # Mostrar resultados: imagen original y máscara
+            # Mostrar resultados: Imagen Original  - Gradcam
             col1, col2 = st.columns(2)
 
             with col1:
                 st.image(resized_image, caption="Imagen original", use_container_width=True)
+            with col2:
+                st.image(gradcam_img, caption="Grad-CAM", use_container_width=True)
+
+            # Mostrar Mascara
+            col1, col2, col3 = st.columns([1, 2, 1])
+
             with col2:
                 st.image(mask * 255, caption=f"Máscara predicha (umbral: {umbral})", use_container_width=True)
 
@@ -399,20 +452,6 @@ if tarea == "Segmentación de Grietas":
             2. Astroza, M. y Figueroa, S. (2000). *Escalas para calificar los daños sísmicos en los muros de edificios de albañilería*. XXIX Jornadas Sudamericanas de Ingeniería Estructural, Montevideo, Uruguay.
             """)
 
-            st.markdown("---")
-
-            st.markdown("#### Otras referencias recomendadas :")
-
-            st.markdown("""
-            - FEMA 306 (1998). *Evaluation of Earthquake Damaged Concrete and Masonry Wall Buildings*.
-
-            - FEMA 307 (1998). *Evaluation of Earthquake Damaged Concrete and Masonry Wall Buildings – Basic Procedures Manual*.
-
-            - FEMA 308 (1998). *Evaluation of Earthquake Damaged Concrete and Masonry Wall Buildings – Technical Resources*.
-
-            - ATC-20 (Applied Technology Council). *Procedures for Postearthquake Safety Evaluation of Buildings*.
-            """)
-
 
     elif subcampo == "Fotos tomadas a mayor distancia":
 
@@ -437,11 +476,11 @@ if tarea == "Segmentación de Grietas":
         ### Rango de captura (Cámara <-> Muro):
 
         - **0.5 m < Distancia de Captura ≤ 1.4 m (Opcion A)**
-          - Requiere imágenes con una resolución mínima de **2048 px** en el lado menor.
+          - Requiere imágenes con una resolución mínima de **1536 px** en el lado menor.
           - También requiere que la imagen sea de **ALTA CALIDAD**.
 
         - **1.4 m < Distancia de Captura ≤ 4.0 m (Opcion B)**
-          - Requiere imágenes con una resolución mínima de **6144 px** en el lado menor.
+          - Requiere imágenes con una resolución mínima de **4608 px** en el lado menor.
           - También requiere que la imagen sea de **MUY ALTA CALIDAD**.
         """)
 
@@ -697,20 +736,6 @@ if tarea == "Segmentación de Grietas":
             2. Astroza, M. y Figueroa, S. (2000). *Escalas para calificar los daños sísmicos en los muros de edificios de albañilería*. XXIX Jornadas Sudamericanas de Ingeniería Estructural, Montevideo, Uruguay.
             """)
 
-            st.markdown("---")
-
-            st.markdown("#### Otras referencias recomendadas ")
-
-            st.markdown("""
-            - FEMA 306 (1998). *Evaluation of Earthquake Damaged Concrete and Masonry Wall Buildings*.
-
-            - FEMA 307 (1998). *Evaluation of Earthquake Damaged Concrete and Masonry Wall Buildings – Basic Procedures Manual*.
-
-            - FEMA 308 (1998). *Evaluation of Earthquake Damaged Concrete and Masonry Wall Buildings – Technical Resources*.
-
-            - ATC-20 (Applied Technology Council). *Procedures for Postearthquake Safety Evaluation of Buildings*.
-            """)
-
 
 elif tarea == "Detección de Muros Confinados":
 
@@ -767,6 +792,11 @@ elif tarea == "Detección de Muros Confinados":
         # =========================
 
         results = model_detector_murosc(img_1024)[0]
+
+        if len(results.boxes) == 0:
+            st.warning("No se detectaron muros confinados en la imagen.")
+            st.image(img_1024, caption="Imagen procesada (sin detecciones)", use_container_width=True)
+            st.stop()
 
         boxes_1024 = []
 
@@ -916,13 +946,27 @@ elif tarea == "Detección de Muros Confinados":
         st.markdown(f"**Resolución recibida:** {w} x {h}")
         st.markdown(f"**Resolución procesada:** {L} x {L}")
 
+
         # =========================
-        # 8. LEYENDA RESUMEN BONITA
+        # 8. LEYENDA
         # =========================
 
         total = len(labels)
         pandereta = sum([1 for s in labels if s >= 0.5])
         no_pandereta = total - pandereta
+
+
+        relaciones_LH = []
+
+        for (x1, y1, x2, y2) in boxes_L:
+
+            ancho = x2 - x1
+            alto = y2 - y1
+
+            if alto > 0:
+                relaciones_LH.append(ancho / alto)
+            else:
+                relaciones_LH.append(0)
 
         st.markdown("---")
         st.markdown("#### Resumen de Muros Confinados Detectados")
@@ -934,6 +978,69 @@ elif tarea == "Detección de Muros Confinados":
         with col_c:
             st.metric("Muros sin unidades Tubulares", no_pandereta)
 
+
+        st.markdown("---")
+
+        # =========================
+        # GRÁFICO CIRCULAR (CENTRADO)
+        # =========================
+        col1, col2, col3 = st.columns([1, 2, 1])
+
+        with col2:
+            fig_pie, ax_pie = plt.subplots(figsize=(7,5))
+
+            ax_pie.pie(
+                [pandereta, no_pandereta],
+                labels=["Tubular", "Sin Tubular"],
+                autopct="%1.1f%%",
+                startangle=90,
+                colors=["#FFA500", "#1f77b4"]
+            )
+
+            ax_pie.set_title("Porcentaje de Muros Detectados")
+            ax_pie.legend(labels=["Tubular", "Sin Tubular"], loc="upper right", bbox_to_anchor=(1.25, 1))
+            st.pyplot(fig_pie)
+
+        st.markdown("---")
+
+        # =========================
+        # GRÁFICO BARRAS (CENTRADO)
+        # =========================
+        col1, col2, col3 = st.columns([1, 3, 1])
+
+        with col2:
+            fig_bar, ax_bar = plt.subplots(figsize=(8,5))
+
+            numeros_muro = np.arange(1, len(relaciones_LH)+1)
+
+            ax_bar.bar(
+                numeros_muro,
+                relaciones_LH,
+                color="#2ecc71"
+            )
+
+            ax_bar.set_xlabel("Muro")
+            ax_bar.set_ylabel("L/H")
+            ax_bar.set_title("Relación Largo / Alto de cada Paño")
+
+            ax_bar.set_xticks(numeros_muro)
+
+            for x, y in zip(numeros_muro, relaciones_LH):
+                ax_bar.text(
+                    x,
+                    y,
+                    f"{y:.2f}",
+                    ha="center",
+                    va="bottom",
+                    fontsize=8,
+                )
+
+            st.pyplot(fig_bar)
+
+
+        # =========================
+        # 9. GUIAS
+        # =========================
 
         st.markdown("---")
 
