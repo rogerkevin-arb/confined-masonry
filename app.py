@@ -984,7 +984,7 @@ elif tarea == "Detección de Muros Confinados":
         # =========================
         # GRÁFICO CIRCULAR (CENTRADO)
         # =========================
-        st.markdown("#### Diagrama Circular : Muros Detectados")
+        st.markdown("#### Diagrama Circular : Muros Detectados (%)")
         
         col1, col2, col3 = st.columns([1, 2, 1])
 
@@ -999,7 +999,7 @@ elif tarea == "Detección de Muros Confinados":
                 colors=["#FFA500", "#1f77b4"]
             )
 
-            ax_pie.set_title("Diagrama Circular (%)")
+            ax_pie.set_title("Diagrama Circular - Muros Detectados (%)")
             ax_pie.legend(labels=["Tubular", "Sin Tubular"], loc="upper right", bbox_to_anchor=(1.25, 1))
             st.pyplot(fig_pie)
 
@@ -1008,8 +1008,8 @@ elif tarea == "Detección de Muros Confinados":
         # =========================
         # GRÁFICO BARRAS (CENTRADO)
         # =========================
-        st.markdown("#### Gráfico de barras : Grado de esbeltez (Muros detectados)")
-        st.markdown("##### Estos valores son medidas referenciales en base al paño extraído por las cajas delimitadoras")
+        st.markdown("#### Gráfico de barras : Grado de esbeltez (L/H)")
+        st.markdown("Estos valores son medidas referenciales en base al paño extraído por las cajas delimitadoras")
         col1, col2, col3 = st.columns([1, 3, 1])
 
         with col2:
@@ -1025,7 +1025,7 @@ elif tarea == "Detección de Muros Confinados":
 
             ax_bar.set_xlabel("Número de Muro")
             ax_bar.set_ylabel("L/H")
-            ax_bar.set_title("Relación Largo / Alto (L/H) de cada paño de muro")
+            ax_bar.set_title("Relación Largo / Alto por paño de muro")
 
             ax_bar.set_xticks(numeros_muro)
 
