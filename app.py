@@ -321,21 +321,19 @@ if tarea == "Segmentación de Grietas":
 
             # Mapa de ancho de grietas
             fig_width, ax_width = plt.subplots(figsize=(5, 4))
-            masked_map = np.ma.masked_where(crack_width_map <= 0, crack_width_map)
-            
+            masked_map = np.ma.masked_where(crack_width_map <= 0, crack_width_map)   
             im = ax_width.imshow(
                 masked_map,
                 cmap='jet',
                 vmin=np.percentile(crack_width_map[crack_width_map > 0], 5) if np.any(crack_width_map > 0) else 0,
                 vmax=np.max(crack_width_map) if np.any(crack_width_map > 0) else 1
             )
-
             ax_width.scatter(max_idx[1], max_idx[0], color='white', s=80, edgecolors='black', label='Ancho máximo')
             ax_width.set_title("Mapa de ancho de grietas")
             ax_width.axis('off')
             plt.colorbar(im, ax=ax_width, fraction=0.046, pad=0.04, label='Ancho (píxeles)')
             ax_width.legend()
-
+            
             buf_width = io.BytesIO()
             plt.tight_layout()
             plt.savefig(buf_width, format="png")
@@ -631,39 +629,24 @@ if tarea == "Segmentación de Grietas":
             # ==================================================
 
             # Mapa de ancho de grietas
-
-            if np.max(crack_width_map) > 0:
-                norm = plt.Normalize(
-                    vmin=np.min(crack_width_map[crack_width_map > 0]),
-                    vmax=np.max(crack_width_map)
-                )
-            else:
-                norm = plt.Normalize(0, 1)
-            
-            cmap = plt.cm.jet
-            
-            mask_crack = crack_width_map > 0
-            
-            colored = np.zeros((*crack_width_map.shape, 4))
-            colored[mask_crack] = cmap(norm(crack_width_map[mask_crack]))
-            
-            ax_width.imshow(colored)
-            
-            ax_width.scatter(
-                max_idx[1], max_idx[0],
-                color='white',
-                s=80,
-                edgecolors='black',
-                label='Ancho máximo'
+            fig_width, ax_width = plt.subplots(figsize=(5, 4))
+            masked_map = np.ma.masked_where(crack_width_map <= 0, crack_width_map)   
+            im = ax_width.imshow(
+                masked_map,
+                cmap='jet',
+                vmin=np.percentile(crack_width_map[crack_width_map > 0], 5) if np.any(crack_width_map > 0) else 0,
+                vmax=np.max(crack_width_map) if np.any(crack_width_map > 0) else 1
             )
-            
+            ax_width.scatter(max_idx[1], max_idx[0], color='white', s=80, edgecolors='black', label='Ancho máximo')
+            ax_width.set_title("Mapa de ancho de grietas")
             ax_width.axis('off')
+            plt.colorbar(im, ax=ax_width, fraction=0.046, pad=0.04, label='Ancho (píxeles)')
             ax_width.legend()
             
-            fig_width.savefig(buf_width, format="png", facecolor='white', bbox_inches='tight')
+            buf_width = io.BytesIO()
+            plt.tight_layout()
+            plt.savefig(buf_width, format="png")
             plt.close(fig_width)
-            
-            buf_width.seek(0)
 
             # Escala verde
             caption_escala = "Escala detectada" if escala_detectada else "Escala no detectada"
