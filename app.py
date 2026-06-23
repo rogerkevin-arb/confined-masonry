@@ -1008,7 +1008,7 @@ elif tarea == "Detección de Muros Confinados":
         # =========================
         # GRÁFICO BARRAS (CENTRADO)
         # =========================
-        st.markdown("#### Gráfico de barras : Grado de esbeltez (L/H)")
+        st.markdown("#### Gráfico de barras : Relación Alto - Ancho (H/L)")
         col1, col2, col3 = st.columns([1, 3, 1])
 
         with col2:
@@ -1023,7 +1023,7 @@ elif tarea == "Detección de Muros Confinados":
             )
 
             ax_bar.set_xlabel("Número de Muro")
-            ax_bar.set_ylabel("L/H")
+            ax_bar.set_ylabel("H/L")
             ax_bar.set_title("Relación Largo / Alto por paño de muro")
 
             ax_bar.set_xticks(numeros_muro)
