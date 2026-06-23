@@ -320,46 +320,32 @@ if tarea == "Segmentación de Grietas":
                 st.image(mask * 255, caption=f"Máscara predicha (umbral: {umbral})", use_container_width=True)
 
             # Mapa de ancho de grietas
-            buf_width = BytesIO()
-            
             fig_width, ax_width = plt.subplots(figsize=(5, 4))
             
             fig_width.patch.set_facecolor('white')
             ax_width.set_facecolor('white')
             
-            # ===== seguridad contra mapas vacíos =====
-            if np.max(crack_width_map) > 0:
-                norm = plt.Normalize(
-                    vmin=np.min(crack_width_map[crack_width_map > 0]),
-                    vmax=np.max(crack_width_map)
-                )
-            else:
-                norm = plt.Normalize(0, 1)
+            masked_map = np.ma.masked_where(crack_width_map <= 0, crack_width_map)
             
-            cmap = plt.cm.jet
-            
-            mask_crack = crack_width_map > 0
-            
-            colored = np.zeros((*crack_width_map.shape, 4))
-            colored[mask_crack] = cmap(norm(crack_width_map[mask_crack]))
-            
-            ax_width.imshow(colored)
+            im = ax_width.imshow(masked_map, cmap='turbo')  # mejor que jet
             
             ax_width.scatter(
                 max_idx[1], max_idx[0],
-                color='white',
-                s=80,
+                color='white', s=80,
                 edgecolors='black',
                 label='Ancho máximo'
             )
             
             ax_width.axis('off')
+            
+            # 🔥 ESTA ES TU LEYENDA REAL DE INTENSIDAD
+            cbar = plt.colorbar(im, ax=ax_width, fraction=0.046, pad=0.04)
+            cbar.set_label('Ancho de grieta (px)')
+            
             ax_width.legend()
             
             fig_width.savefig(buf_width, format="png", facecolor='white', bbox_inches='tight')
             plt.close(fig_width)
-            
-            buf_width.seek(0)
 
             # Preparar imagen de escala
             caption_escala = "Escala detectada" if escala_detectada else "Escala no detectada"
