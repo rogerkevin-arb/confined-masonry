@@ -55,13 +55,9 @@ model_clasificador_grieta = cargar_clasificador_grieta()
 model_detector_murosc = cargar_detector_murosc()
 model_clasificador_ladrillo = cargar_clasificador_ladrillo()
 
-
-
-
 # ==================================================
 # FUNCION GRAD - CAM
 # ==================================================
-
 
 def make_gradcam_heatmap(img_array, model, last_conv_layer_name):
     grad_model = tf.keras.models.Model(
@@ -681,7 +677,6 @@ if tarea == "Segmentación de Grietas":
             st.markdown("### Estimación automática de ancho de grieta")
             metodo1, metodo2 = st.columns(2)
 
-
             with metodo1:
                 st.markdown("#### Método 1: Mediante plantilla verde en el muro")
                 if not usar_escala_verde:
@@ -719,21 +714,15 @@ if tarea == "Segmentación de Grietas":
             with st.expander("📚 Clasificación de daños según grietas por movimientos sísmicos y movimiento progresivo de cimientos"):
 
                 col1, col2 = st.columns(2)
-
                 with col1:
                     st.image("tabla1.png", caption="Escala de daño sísmico en albañilería Confinada.",use_container_width=True)
-
                 with col2:
                     st.image("tabla2.png", caption="BRE Digest 251 - Evaluación de daños en edificios de poca altura debido al movimiento progresivo de los cimientos.",use_container_width=True)
 
-
             st.markdown("---")
-
             st.markdown("#### Referencias usadas para las tablas de diagnóstico")
-
             st.markdown("""
             1. BRE Digest 251. Driscoll, R. (1995). *Assessment of Damage in Low-Rise Buildings, with Particular Reference to Progressive Foundation Movement*, United Kingdom.
-
             2. Astroza, M. y Figueroa, S. (2000). *Escalas para calificar los daños sísmicos en los muros de edificios de albañilería*. XXIX Jornadas Sudamericanas de Ingeniería Estructural, Montevideo, Uruguay.
             """)
 
@@ -947,7 +936,6 @@ elif tarea == "Detección de Muros Confinados":
         st.markdown(f"**Resolución recibida:** {w} x {h}")
         st.markdown(f"**Resolución procesada:** {L} x {L}")
 
-
         # =========================
         # 8. LEYENDA
         # =========================
@@ -955,7 +943,6 @@ elif tarea == "Detección de Muros Confinados":
         total = len(labels)
         pandereta = sum([1 for s in labels if s >= 0.5])
         no_pandereta = total - pandereta
-
 
         relaciones_LH = []
 
@@ -1041,7 +1028,6 @@ elif tarea == "Detección de Muros Confinados":
 
             st.pyplot(fig_bar)
 
-
         # =========================
         # 9. GUIAS
         # =========================
@@ -1050,7 +1036,6 @@ elif tarea == "Detección de Muros Confinados":
 
         with st.expander("📚 Restricciones del uso de Unidades de Albañileria en Muros Confinados según Zona Sísmica."):
           st.image("tabla3.png", caption="Restricciones del uso de Unidades de Albañileria en Muros Confinados según Zona Sísmica",use_container_width=True)
-
 
         # =========================
         # 9. VISUALIZACIÓN DESLIZABLE DE MUROS
@@ -1072,15 +1057,10 @@ elif tarea == "Detección de Muros Confinados":
                 st.markdown(f"### Muro Confinado {i} - {clase} ({score:.2f})")
                 st.image(crop, width=800)
 
-
         st.markdown("---")
-
         st.markdown("#### Referencias usadas para la tabla y YOLO11l :")
-
         st.markdown("""
-        1. C. y S. Ministerio de Vivienda, “Norma Técnica E.070 Albañilería,” Lima, Perú, 2020.
-        
+        1. C. y S. Ministerio de Vivienda, “Norma Técnica E.070 Albañilería,” Lima, Perú, 2020. 
         2. Ultralytics YOLO11 | Ultralytics Docs,” Ultralytics Docs. 
-
         """)
 
