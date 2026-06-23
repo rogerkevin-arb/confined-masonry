@@ -321,30 +321,24 @@ if tarea == "Segmentación de Grietas":
 
             # Mapa de ancho de grietas
             fig_width, ax_width = plt.subplots(figsize=(5, 4))
-            
-            fig_width.patch.set_facecolor('white')
-            ax_width.set_facecolor('white')
-            
             masked_map = np.ma.masked_where(crack_width_map <= 0, crack_width_map)
             
-            im = ax_width.imshow(masked_map, cmap='turbo')  # mejor que jet
-            
-            ax_width.scatter(
-                max_idx[1], max_idx[0],
-                color='white', s=80,
-                edgecolors='black',
-                label='Ancho máximo'
+            im = ax_width.imshow(
+                masked_map,
+                cmap='jet',
+                vmin=np.percentile(crack_width_map[crack_width_map > 0], 5) if np.any(crack_width_map > 0) else 0,
+                vmax=np.max(crack_width_map) if np.any(crack_width_map > 0) else 1
             )
-            
+
+            ax_width.scatter(max_idx[1], max_idx[0], color='white', s=80, edgecolors='black', label='Ancho máximo')
+            ax_width.set_title("Mapa de ancho de grietas")
             ax_width.axis('off')
-            
-            # 🔥 ESTA ES TU LEYENDA REAL DE INTENSIDAD
-            cbar = plt.colorbar(im, ax=ax_width, fraction=0.046, pad=0.04)
-            cbar.set_label('Ancho de grieta (px)')
-            
+            plt.colorbar(im, ax=ax_width, fraction=0.046, pad=0.04, label='Ancho (píxeles)')
             ax_width.legend()
-            
-            fig_width.savefig(buf_width, format="png", facecolor='white', bbox_inches='tight')
+
+            buf_width = io.BytesIO()
+            plt.tight_layout()
+            plt.savefig(buf_width, format="png")
             plt.close(fig_width)
 
             # Preparar imagen de escala
