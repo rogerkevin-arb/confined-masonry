@@ -1063,4 +1063,3 @@ elif tarea == "Detección de Muros Confinados":
         1. C. y S. Ministerio de Vivienda, “Norma Técnica E.070 Albañilería,” Lima, Perú, 2020. 
         2. Ultralytics YOLO11 | Ultralytics Docs,” Ultralytics Docs. 
         """)
-
