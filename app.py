@@ -536,6 +536,8 @@ if tarea == "Segmentación de Grietas":
             parches_con_grieta = 0
             parches_sin_grieta = 0
 
+            # Imagen para visualización superpuesta
+            img_overlay = img_resize.copy()
 
             for y in range(0, H, 512):
                 for x in range(0, W, 512):
@@ -545,6 +547,17 @@ if tarea == "Segmentación de Grietas":
                         parches_con_grieta += 1
                         mask_patch = segmentar_parche(parche, umbral)
                         mascara_global[y:y+512, x:x+512] = mask_patch
+                        
+                        # ==============================
+                        # Visualización del parche segmentado
+                        # ==============================
+                        # Crear parche negro
+                        parche_visual = np.zeros((512, 512, 3), dtype=np.uint8)
+                        # Dibujar la grieta en blanco
+                        parche_visual[mask_patch == 1] = (255, 255, 255)
+                        # Colocar el parche sobre la imagen reconstruida
+                        img_overlay[y:y+512, x:x+512] = parche_visual
+
                     else:
                         parches_sin_grieta += 1
 
@@ -604,7 +617,7 @@ if tarea == "Segmentación de Grietas":
                         mm_per_pixel = ancho_mm / np.mean([w,h])
 
             # ==================================================
-            # SECCION 1 : IMAGEN Y MASCARA
+            # SECCION 1 : IMAGEN + SEGMENTACIÓN
             # ==================================================
 
             st.markdown("---")
@@ -612,10 +625,22 @@ if tarea == "Segmentación de Grietas":
             col1, col2 = st.columns(2)
 
             with col1:
-                st.image(img_resize, caption="Imagen procesada", use_container_width=True)
+                st.image(img_resize,
+                        caption="Imagen original",
+                        use_container_width=True)
 
             with col2:
-                st.image(mask * 255, caption="Máscara reconstruida", use_container_width=True)
+                st.image(img_overlay,
+                        caption="Segmentación superpuesta",
+                        use_container_width=True)
+
+            # Máscara binaria debajo
+            col1, col2, col3 = st.columns([1,2,1])
+
+            with col2:
+                st.image(mask*255,
+                        caption="Máscara reconstruida",
+                        use_container_width=True)
 
 
             # ==================================================
