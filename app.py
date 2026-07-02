@@ -768,7 +768,7 @@ elif tarea == "Detección de Muros Confinados":
     """)
 
     st.markdown("### Parámetros")
-    conf_yolo = st.slider("Umbral de confianza del detector YOLO",min_value=0.0,max_value=1.0, value=0.80,step=0.01)
+    conf_yolo = st.slider("Umbral de confianza del detector YOLO",min_value=0.0,max_value=1.0, value=0.50,step=0.01)
     umbral_clasificador = st.slider("Umbral de confianza del clasificador de unidades tubulares",min_value=0.0,max_value=1.0,value=0.50,step=0.01)
     st.markdown("### Filtro de Muros Redundantes (%)")
     porcentaje_minimo = st.slider("Eliminar detecciones con área menor al (%) del muro más grande",min_value=0,max_value=100,value=25,step=1)
