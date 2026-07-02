@@ -152,13 +152,11 @@ def redimensionar_imagen_grande(img, lado_objetivo):
 
         return img_resize, lado_objetivo, formato
 
-
-def existe_grieta_en_parche(parche_rgb):
-    # patch = parche_rgb.astype(np.float32)
-    patch = np.expand_dims(parche_rgb,axis=0)
-    pred = model_clasificador_grieta.predict(patch,verbose=0)[0][0]
-    return pred >= 0.5
-
+    
+def existe_grieta_en_parche(parche_rgb, umbral_clasificador):
+    patch = np.expand_dims(parche_rgb, axis=0)
+    pred = model_clasificador_grieta.predict(patch, verbose=0)[0][0]
+    return pred >= umbral_clasificador
 
 def segmentar_parche(parche_rgb, umbral):
     patch = np.expand_dims(parche_rgb,axis=0)
@@ -495,7 +493,8 @@ if tarea == "Segmentación de Grietas":
             )
 
         st.markdown("### Parámetros")
-        umbral = st.slider("Umbral para binarización", min_value=0.0, max_value=1.0, value=0.5, step=0.01, key="distancia_umbral")
+        umbral_clasificador = st.slider("Umbral de confianza del clasificador de grietas",min_value=0.0,max_value=1.0,value=0.50, step=0.01)
+        umbral = st.slider("Umbral para segmentación", min_value=0.0, max_value=1.0, value=0.5, step=0.01, key="distancia_umbral")
 
         ancho_mm = st.number_input("Ancho real de la escala cuadrada (mm) - Método 1", min_value=1.0, max_value=1000.0, value=20.0, step=1.0, key="distancia_plantilla")
         usar_escala_verde = st.checkbox("Activar detección automática de escala verde",value=True)
@@ -542,7 +541,7 @@ if tarea == "Segmentación de Grietas":
             for y in range(0, H, 512):
                 for x in range(0, W, 512):
                     parche = img_resize[y:y+512, x:x+512]
-                    hay_grieta = existe_grieta_en_parche(parche)
+                    hay_grieta = existe_grieta_en_parche(parche, umbral_clasificador)
                     if hay_grieta:
                         parches_con_grieta += 1
                         mask_patch = segmentar_parche(parche, umbral)
@@ -766,9 +765,15 @@ elif tarea == "Detección de Muros Confinados":
         - Las coordenadas de las cajas delimitadoras se reescalan a la imagen LxL para la extraccion de muros.
         - Se extraen los muros manteniendo la resolucion, se vuelven cuadradas y se redimensionan a 512x512 para su clasificación mediante un modelo CNN.
     - Se identifican y se hace un conteo automático de los muros confinados con unidades tubulares (Norma E070).
-
     """)
 
+    st.markdown("### Parámetros")
+    conf_yolo = st.slider("Umbral de confianza del detector YOLO",min_value=0.0,max_value=1.0, value=0.80,step=0.01)
+    umbral_clasificador = st.slider("Umbral de confianza del clasificador de unidades tubulares",min_value=0.0,max_value=1.0,value=0.50,step=0.01)
+    st.markdown("### Filtro de Muros Redundantes (%)")
+    porcentaje_minimo = st.slider("Eliminar detecciones con área menor al (%) del muro más grande",min_value=0,max_value=100,value=25,step=1)
+
+    
     uploaded_file = st.file_uploader("Sube una imagen", type=["jpg","jpeg","png","JPG"])
 
     if uploaded_file is not None:
@@ -806,7 +811,7 @@ elif tarea == "Detección de Muros Confinados":
         # 4. DETECCIÓN YOLO
         # =========================
 
-        results = model_detector_murosc(img_1024)[0]
+        results = model_detector_murosc(img_1024, conf=conf_yolo)[0]
 
         if len(results.boxes) == 0:
             st.warning("No se detectaron muros confinados en la imagen.")
@@ -818,21 +823,6 @@ elif tarea == "Detección de Muros Confinados":
         for box in results.boxes:
             x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
             boxes_1024.append([x1, y1, x2, y2])
-
-        # =========================
-        # FILTRO DE ÁREA
-        # =========================
-
-        st.markdown("---")
-        st.markdown("### Filtro de Muros Redundantes")
-
-        porcentaje_minimo = st.slider(
-            "Eliminar detecciones con área menor al (%) del muro más grande",
-            min_value=0,
-            max_value=100,
-            value=25,
-            step=1
-        )
 
         # =========================
         # 5. REESCALAR A LxL
@@ -926,7 +916,7 @@ elif tarea == "Detección de Muros Confinados":
 
             x1, y1, x2, y2 = map(int, box)
 
-            is_pandereta = score >= 0.5
+            is_pandereta = score >= umbral_clasificador
             color = (160, 0, 0) if is_pandereta else (0, 220, 0)
 
             cv2.rectangle(output, (x1, y1), (x2, y2), color, 3)
@@ -966,7 +956,7 @@ elif tarea == "Detección de Muros Confinados":
         # =========================
 
         total = len(labels)
-        pandereta = sum([1 for s in labels if s >= 0.5])
+        pandereta = sum([1 for s in labels if s >= umbral_clasificador])
         no_pandereta = total - pandereta
 
         relaciones_LH = []
@@ -1076,8 +1066,8 @@ elif tarea == "Detección de Muros Confinados":
                 if crop.size == 0:
                     continue
 
-                clase = "Unidad Tubular Detectada" if score >= 0.5 else "Unidad Tubular no Detectada"
-                color = "red" if score >= 0.5 else "green"
+                clase = "Unidad Tubular Detectada" if score >= umbral_clasificador else "Unidad Tubular no Detectada"
+                color = "red" if score >= umbral_clasificador else "green"
 
                 st.markdown(f"### Muro Confinado {i} - {clase} ({score:.2f})")
                 st.image(crop, width=800)
