@@ -917,7 +917,7 @@ elif tarea == "Detección de Muros Confinados":
             x1, y1, x2, y2 = map(int, box)
 
             is_pandereta = score >= umbral_clasificador
-            color = (250, 0, 0) if is_pandereta else (0, 220, 0)
+            color = (150, 0, 0) if is_pandereta else (0, 150, 0)
 
             cv2.rectangle(output, (x1, y1), (x2, y2), color, 3)
 
@@ -931,38 +931,45 @@ elif tarea == "Detección de Muros Confinados":
                 f"Pred: {score:.2f}"
             ]
 
-            cx = x1 + 5
+            cx = x1 + 10
             cy = y1 + 20
 
             font = cv2.FONT_HERSHEY_SIMPLEX
-            for j, line in enumerate(lines):
-                y_text = cy + j * 18
-                # Contorno negro
-                thickness_outline = 2
-                for dx, dy in [(-1,0),(1,0),(0,-1),(0,1),(-1,-1),(-1,1),(1,-1),(1,1)]:
-                    cv2.putText(
-                        output,
-                        line,
-                        (cx + dx, y_text + dy),
-                        font,
-                        0.5,
-                        (0,0,0),
-                        thickness_outline,
-                        cv2.LINE_AA
-                    )
+            font_scale = 0.5
+            thickness = 1
 
-                # ===== TEXTO FINAL =====
+            for j, line in enumerate(lines):
+
+                (text_w, text_h), baseline = cv2.getTextSize(
+                    line, font, font_scale, thickness
+                )
+
+                y_text = cy + j * (text_h + 6)
+
+                # color del fondo = mismo color de la caja
+                box_color = color
+
+                # coordenadas del rectángulo de fondo
+                cv2.rectangle(
+                    output,
+                    (cx - 2, y_text - text_h - 2),
+                    (cx + text_w + 2, y_text + baseline + 2),
+                    box_color,
+                    -1
+                )
+
+                # texto  encima
                 cv2.putText(
                     output,
                     line,
                     (cx, y_text),
                     font,
-                    0.5,
-                    color,
-                    1,
+                    font_scale,
+                    (255, 255, 255),
+                    thickness,
                     cv2.LINE_AA
                 )
-
+                
         st.image(output, caption="Resultado YOLO + Clasificación", use_container_width=True)
 
         st.markdown(f"**Resolución recibida:** {w} x {h}")
