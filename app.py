@@ -771,7 +771,7 @@ elif tarea == "Detección de Muros Confinados":
     conf_yolo = st.slider("Umbral de confianza del detector YOLO",min_value=0.0,max_value=1.0, value=0.80,step=0.01)
     umbral_clasificador = st.slider("Umbral del clasificador para unidades de albañilería",min_value=0.0,max_value=1.0,value=0.50,step=0.01)
     st.markdown("### Filtro de Muros Redundantes % (Opcional)")
-    porcentaje_minimo = st.slider("Eliminar detecciones con área menor al (%) del muro más grande",min_value=0,max_value=100,value=0,step=1)
+    porcentaje_minimo = st.slider("Eliminar detecciones con área menor al (%) del muro más grande",min_value=0,max_value=100,value=25,step=1)
 
     
     uploaded_file = st.file_uploader("Sube una imagen", type=["jpg","jpeg","png","JPG"])
@@ -818,12 +818,14 @@ elif tarea == "Detección de Muros Confinados":
             st.image(img_1024, caption="Imagen procesada (sin detecciones)", use_container_width=True)
             st.stop()
 
-        boxes_1024 = []
 
+        boxes_1024 = []
+        conf_yolo_boxes = []
         for box in results.boxes:
             x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
             boxes_1024.append([x1, y1, x2, y2])
-
+            conf_yolo_boxes.append(float(box.conf[0]))
+            
         # =========================
         # 5. REESCALAR A LxL
         # =========================
@@ -858,16 +860,20 @@ elif tarea == "Detección de Muros Confinados":
 
             boxes_L_filtradas = []
             boxes_1024_filtradas = []
+            conf_yolo_filtradas = []
 
-            for box_L, box_1024, area in zip(boxes_L, boxes_1024, areas):
+            for box_L, box_1024, conf, area in zip(
+                    boxes_L, boxes_1024, conf_yolo_boxes, areas):
 
                 if area >= umbral_area:
 
                     boxes_L_filtradas.append(box_L)
                     boxes_1024_filtradas.append(box_1024)
+                    conf_yolo_filtradas.append(conf)
 
             boxes_L = boxes_L_filtradas
             boxes_1024 = boxes_1024_filtradas
+            conf_yolo_boxes = conf_yolo_filtradas
 
         st.info(
             f"Muros detectados : {len(boxes_L)}"
@@ -912,8 +918,9 @@ elif tarea == "Detección de Muros Confinados":
 
         output = img_1024.copy()
 
-        for i, (box, score) in enumerate(zip(boxes_1024, labels), start=1):
 
+        for i, (box, score, conf_det) in enumerate(zip(boxes_1024, labels, conf_yolo_boxes), start=1):
+            
             x1, y1, x2, y2 = map(int, box)
 
             is_pandereta = score >= umbral_clasificador
@@ -927,6 +934,7 @@ elif tarea == "Detección de Muros Confinados":
             lines = [
                 f"Muro {i}",
                 "Muro Confinado",
+                f"Conf: {conf_det:.2f}",
                 clase,
                 f"Pred: {score:.2f}"
             ]
