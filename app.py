@@ -938,8 +938,30 @@ elif tarea == "Detección de Muros Confinados":
             for j, line in enumerate(lines):
                 y_text = cy + j * 18
                 # Contorno negro
-                cv2.putText(output, line, (cx, y_text), font, 0.5, (0,0,0), 2, cv2.LINE_AA)
-                cv2.putText(output, line, (cx, y_text), font, 0.5, color, 1, cv2.LINE_AA)
+                thickness_outline = 2
+                for dx, dy in [(-1,0),(1,0),(0,-1),(0,1),(-1,-1),(-1,1),(1,-1),(1,1)]:
+                    cv2.putText(
+                        output,
+                        line,
+                        (cx + dx, y_text + dy),
+                        font,
+                        0.5,
+                        (0,0,0),
+                        thickness_outline,
+                        cv2.LINE_AA
+                    )
+
+                # ===== TEXTO FINAL =====
+                cv2.putText(
+                    output,
+                    line,
+                    (cx, y_text),
+                    font,
+                    0.5,
+                    color,
+                    1,
+                    cv2.LINE_AA
+                )
 
         st.image(output, caption="Resultado YOLO + Clasificación", use_container_width=True)
 
