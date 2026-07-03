@@ -870,7 +870,7 @@ elif tarea == "Detección de Muros Confinados":
             boxes_1024 = boxes_1024_filtradas
 
         st.info(
-            f"Muros detectados después del filtro: {len(boxes_L)}"
+            f"Muros detectados : {len(boxes_L)}"
         )
 
         # =========================
@@ -917,7 +917,7 @@ elif tarea == "Detección de Muros Confinados":
             x1, y1, x2, y2 = map(int, box)
 
             is_pandereta = score >= umbral_clasificador
-            color = (240, 0, 0) if is_pandereta else (0, 220, 0)
+            color = (250, 0, 0) if is_pandereta else (0, 220, 0)
 
             cv2.rectangle(output, (x1, y1), (x2, y2), color, 3)
 
@@ -934,7 +934,7 @@ elif tarea == "Detección de Muros Confinados":
             cx = x1 + 5
             cy = y1 + 20
 
-            font = cv2.FONT_HERSHEY_DUPLEX
+            font = cv2.FONT_HERSHEY_SIMPLEX
             for j, line in enumerate(lines):
                 y_text = cy + j * 18
                 # Contorno negro
