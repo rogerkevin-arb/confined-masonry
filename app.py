@@ -193,7 +193,6 @@ tarea = st.sidebar.selectbox(
     ]
 )
 
-mostrar_memoria()
 
 if tarea == "Segmentación de Grietas":
 
@@ -204,11 +203,13 @@ if tarea == "Segmentación de Grietas":
             "Fotos tomadas a mayor distancia"
         ]
     )
+    
 
 elif tarea == "Detección de Muros Confinados":
 
     subcampo = None
 
+mostrar_memoria()
 
 # ======== Interfaz ========
 if tarea == "Segmentación de Grietas":
