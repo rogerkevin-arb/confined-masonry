@@ -1131,16 +1131,21 @@ elif tarea == "Detección de Muros Confinados":
         # =========================
         st.markdown("## Muros detectados (vista optimizada)")
         
-        muro_sel = st.selectbox(
-            "Selecciona muro",
-            list(range(1, len(boxes_L)+1))
-        )
-        
+        muro_sel = st.selectbox("Selecciona muro",list(range(1, len(boxes_L)+1)))
         x1, y1, x2, y2 = map(int, boxes_L[muro_sel-1])
         crop = padded[y1:y2, x1:x2]
-        
-        st.image(crop, width=400)
-        st.markdown(f"Score: {labels[muro_sel-1]:.2f}")
+        score = float(labels[muro_sel-1])
+        relacion_LA = float(relaciones_LH[muro_sel-1]) 
+        # Clasificación
+        clase = "Muro Confinado con Ladrillo Tubular (Pandereta)" if score >= umbral_clasificador else "Muro Confinado sin Ladrillo Tubular"
+        st.image(crop, width=500)
+        st.markdown(f"""
+        ### Información del Muro
+        - **ID Muro:** {muro_sel}  
+        - **Clasificación:** {clase}  
+        - **Score de clasificación:** {score:.2f}  
+        - **Relación L/A (Longitud/Altura):** {relacion_LA:.2f}  
+        """)
 
         st.markdown("---")
         st.markdown("#### Referencias usadas para la tabla y YOLO11l :")
