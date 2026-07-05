@@ -17,7 +17,22 @@ import tensorflow.keras.backend as K
 import matplotlib.cm as cm
 
 import hashlib
+import psutil, os
 
+# ======== Funciones personalizadas ========
+def mostrar_memoria():
+    proceso = psutil.Process(os.getpid())
+    ram_mb = proceso.memory_info().rss / 1024**2
+
+    st.sidebar.write(f"🧠 RAM usada: {ram_mb:.0f} MB")
+
+    if ram_mb > 800:
+        st.sidebar.error("⚠️ Muy cerca del límite")
+    elif ram_mb > 600:
+        st.sidebar.warning("Cuidado con la memoria")
+
+    return ram_mb
+    
 # ======== Funciones personalizadas ========
 def Weighted_Cross_Entropy(beta):
     def convert_to_logits(y_pred):
@@ -178,6 +193,8 @@ tarea = st.sidebar.selectbox(
     ]
 )
 
+mostrar_memoria()
+
 if tarea == "Segmentación de Grietas":
 
     subcampo = st.sidebar.radio(
@@ -245,6 +262,9 @@ if tarea == "Segmentación de Grietas":
                 for k in list(st.session_state.keys()):
                     if k != "last_image_hash":
                         del st.session_state[k]
+                # 3. limpiar TensorFlow (CLAVE)
+                tf.keras.backend.clear_session()
+                # 4. forzar garbage collector
                 gc.collect()
         
             # recién aquí procesas la imagen
@@ -536,6 +556,9 @@ if tarea == "Segmentación de Grietas":
                 for k in list(st.session_state.keys()):
                     if k != "last_image_hash":
                         del st.session_state[k]
+                # 3. limpiar TensorFlow (CLAVE)
+                tf.keras.backend.clear_session()
+                # 4. forzar garbage collector
                 gc.collect()
 
             image = Image.open(uploaded_file)
@@ -818,8 +841,11 @@ elif tarea == "Detección de Muros Confinados":
             for k in list(st.session_state.keys()):
                 if k != "last_image_hash":
                     del st.session_state[k]
+            # 3. limpiar TensorFlow (CLAVE)
+            tf.keras.backend.clear_session()
+            # 4. forzar garbage collector
             gc.collect()
-
+            
         # =========================
         # 1. CARGA IMAGEN
         # =========================
@@ -1138,7 +1164,7 @@ elif tarea == "Detección de Muros Confinados":
         relacion_LA = float(relaciones_LH[muro_sel-1]) 
         # Clasificación
         clase = "Muro Confinado con Ladrillo Tubular (Pandereta)" if score >= umbral_clasificador else "Muro Confinado sin Ladrillo Tubular"
-        st.image(crop, width=500)
+        st.image(crop, width=800)
         st.markdown(f"""
         ### Información del Muro
         - **ID Muro:** {muro_sel}  
