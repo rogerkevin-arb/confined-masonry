@@ -16,6 +16,7 @@ import gc
 import tensorflow.keras.backend as K
 import matplotlib.cm as cm
 
+import hashlib
 
 # ======== Funciones personalizadas ========
 def Weighted_Cross_Entropy(beta):
@@ -53,25 +54,6 @@ model_clasificador_grieta = cargar_clasificador_grieta()
 model_detector_murosc = cargar_detector_murosc()
 model_clasificador_ladrillo = cargar_clasificador_ladrillo()
 
-
-# ==================================================
-# MONITOR DE MEMORIA
-# ==================================================
-import psutil
-import os
-import gc
-
-def revisar_memoria():
-    process = psutil.Process(os.getpid())
-    ram_total = psutil.virtual_memory().total / (1024**2)
-    ram_usada = process.memory_info().rss / (1024**2)
-    st.sidebar.caption(f"RAM: {ram_usada:.0f} / {ram_total:.0f} MB")
-    # Reiniciar cuando supere el 70%
-    if ram_usada > 0.70 * ram_total:
-        st.warning("⚠️ La memoria está casi llena. La aplicación se reiniciará automáticamente para liberar recursos.")
-        gc.collect()
-        st.session_state.clear()
-        st.rerun()
 
 # ==================================================
 # FUNCION GRAD - CAM
@@ -245,11 +227,27 @@ if tarea == "Segmentación de Grietas":
 
         R_original = st.number_input("Si la imagen proviene del recorte de una imagen más grande, indicar la resolución de la imagen original (pixeles):",min_value=0,value=0,step=1)
 
-
         # Subida de imagen
         uploaded_file = st.file_uploader("Sube una imagen (.jpg, .jpeg, .png)", type=["jpg", "jpeg", "png"])
 
-        if uploaded_file is not None:
+        if uploaded_file is not None: 
+            
+            # detectar si es nueva imagen
+            new_hash = hashlib.md5(uploaded_file.getvalue()).hexdigest()
+            if "last_image_hash" not in st.session_state:
+                st.session_state.last_image_hash = None
+            if st.session_state.last_image_hash != new_hash:
+                st.session_state.last_image_hash = new_hash
+                # BORRAR TODO LO ANTERIOR
+                gc.collect()
+                plt.close("all")
+                # borrar variables de ejecución anterior
+                for k in list(st.session_state.keys()):
+                    if k != "last_image_hash":
+                        del st.session_state[k]
+                gc.collect()
+        
+            # recién aquí procesas la imagen
             image = Image.open(uploaded_file).convert("RGB")
             w_original, h_original = image.size
             resized_image = image.resize((512, 512))
@@ -460,7 +458,6 @@ if tarea == "Segmentación de Grietas":
             1. BRE Digest 251. Driscoll, R. (1995). *Assessment of Damage in Low-Rise Buildings, with Particular Reference to Progressive Foundation Movement*, United Kingdom.
             2. Astroza, M. y Figueroa, S. (2000). *Escalas para calificar los daños sísmicos en los muros de edificios de albañilería*. XXIX Jornadas Sudamericanas de Ingeniería Estructural, Montevideo, Uruguay.
             """)      
-            revisar_memoria()
 
     elif subcampo == "Fotos tomadas a mayor distancia":
 
@@ -525,6 +522,21 @@ if tarea == "Segmentación de Grietas":
         uploaded_file = st.file_uploader("Sube una imagen", type=["jpg", "jpeg", "png"], key="upload_distancia")
 
         if uploaded_file is not None:
+            
+            # detectar si es nueva imagen
+            new_hash = hashlib.md5(uploaded_file.getvalue()).hexdigest()
+            if "last_image_hash" not in st.session_state:
+                st.session_state.last_image_hash = None
+            if st.session_state.last_image_hash != new_hash:
+                st.session_state.last_image_hash = new_hash
+                # BORRAR TODO LO ANTERIOR
+                gc.collect()
+                plt.close("all")
+                # borrar variables de ejecución anterior
+                for k in list(st.session_state.keys()):
+                    if k != "last_image_hash":
+                        del st.session_state[k]
+                gc.collect()
 
             image = Image.open(uploaded_file)
             image = ImageOps.exif_transpose(image)
@@ -763,7 +775,7 @@ if tarea == "Segmentación de Grietas":
             1. BRE Digest 251. Driscoll, R. (1995). *Assessment of Damage in Low-Rise Buildings, with Particular Reference to Progressive Foundation Movement*, United Kingdom.
             2. Astroza, M. y Figueroa, S. (2000). *Escalas para calificar los daños sísmicos en los muros de edificios de albañilería*. XXIX Jornadas Sudamericanas de Ingeniería Estructural, Montevideo, Uruguay.
             """)
-            revisar_memoria()
+
 
 
 elif tarea == "Detección de Muros Confinados":
@@ -792,6 +804,21 @@ elif tarea == "Detección de Muros Confinados":
     uploaded_file = st.file_uploader("Sube una imagen", type=["jpg","jpeg","png","JPG"])
 
     if uploaded_file is not None:
+        
+        # detectar si es nueva imagen
+        new_hash = hashlib.md5(uploaded_file.getvalue()).hexdigest()
+        if "last_image_hash" not in st.session_state:
+            st.session_state.last_image_hash = None
+        if st.session_state.last_image_hash != new_hash:
+            st.session_state.last_image_hash = new_hash
+            # BORRAR TODO LO ANTERIOR
+            gc.collect()
+            plt.close("all")
+            # borrar variables de ejecución anterior
+            for k in list(st.session_state.keys()):
+                if k != "last_image_hash":
+                    del st.session_state[k]
+            gc.collect()
 
         # =========================
         # 1. CARGA IMAGEN
@@ -1058,7 +1085,7 @@ elif tarea == "Detección de Muros Confinados":
         # =========================
         # GRÁFICO BARRAS (CENTRADO)
         # =========================
-        st.markdown("#### Gráfico de barras : Relación Alto - Ancho (H/L)")
+        st.markdown("#### Gráfico de barras : Relación Longitud - Altura (L/A)")
         col1, col2, col3 = st.columns([1, 3, 1])
 
         with col2:
@@ -1073,8 +1100,8 @@ elif tarea == "Detección de Muros Confinados":
             )
 
             ax_bar.set_xlabel("Número de Muro")
-            ax_bar.set_ylabel("H/L")
-            ax_bar.set_title("Relación Largo / Alto por paño de muro")
+            ax_bar.set_ylabel("L/A")
+            ax_bar.set_title("Relación Longitud/Altura por paño de muro")
 
             ax_bar.set_xticks(numeros_muro)
 
@@ -1125,4 +1152,4 @@ elif tarea == "Detección de Muros Confinados":
         1. C. y S. Ministerio de Vivienda, “Norma Técnica E.070 Albañilería,” Lima, Perú, 2020. 
         2. Ultralytics YOLO11 | Ultralytics Docs,” Ultralytics Docs. 
         """)
-        revisar_memoria()
+
