@@ -814,6 +814,7 @@ if tarea == "Segmentación de Grietas":
             1. BRE Digest 251. Driscoll, R. (1995). *Assessment of Damage in Low-Rise Buildings, with Particular Reference to Progressive Foundation Movement*, United Kingdom.
             2. Astroza, M. y Figueroa, S. (2000). *Escalas para calificar los daños sísmicos en los muros de edificios de albañilería*. XXIX Jornadas Sudamericanas de Ingeniería Estructural, Montevideo, Uruguay.
             """)
+            
             image.close()
             del image
             del img_original
@@ -927,7 +928,9 @@ elif tarea == "Detección de Muros Confinados":
             x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
             boxes_1024.append([x1, y1, x2, y2])
             conf_yolo_boxes.append(float(box.conf[0]))
-            
+
+        del results
+        gc.collect()
         # =========================
         # 5. REESCALAR A LxL
         # =========================
@@ -1139,11 +1142,6 @@ elif tarea == "Detección de Muros Confinados":
             ax_pie.legend(labels=["Tubular", "Sin Tubular"], loc="upper right", bbox_to_anchor=(1.25, 1))
             st.pyplot(fig_pie)
 
-            plt.close(fig_pie)
-            del fig_pie
-            del ax_pie
-            gc.collect()
-
         st.markdown("---")
 
         # =========================
@@ -1179,13 +1177,6 @@ elif tarea == "Detección de Muros Confinados":
                     fontsize=8,
                 )
 
-            st.pyplot(fig_bar)
-
-            plt.close(fig_bar)
-            del fig_bar
-            del ax_bar
-            gc.collect()
-
         # =========================
         # 9. GUIAS
         # =========================
@@ -1206,20 +1197,23 @@ elif tarea == "Detección de Muros Confinados":
         2. Ultralytics YOLO11 | Ultralytics Docs,” Ultralytics Docs. 
         """)
 
-        image.close()
-        
+        image.close()   
         del image
         del img
         del padded
         del img_1024
-        del output
-        
+        del output    
         del boxes_1024
         del boxes_L
-        del conf_yolo_boxes
-        
+        del conf_yolo_boxes 
         del labels
         del relaciones_LH
-        
         gc.collect()
+        
+        st.markdown("---")
+        
+        if st.button("Procesar otra imagen"):
+            st.cache_data.clear()
+            gc.collect()
+            st.rerun()
 
