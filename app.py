@@ -1020,7 +1020,6 @@ elif tarea == "Detección de Muros Confinados":
 
         output = img_1024.copy()
 
-
         for i, (box, score, conf_det) in enumerate(zip(boxes_1024, labels, conf_yolo_boxes), start=1):
             
             x1, y1, x2, y2 = map(int, box)
@@ -1140,6 +1139,11 @@ elif tarea == "Detección de Muros Confinados":
             ax_pie.legend(labels=["Tubular", "Sin Tubular"], loc="upper right", bbox_to_anchor=(1.25, 1))
             st.pyplot(fig_pie)
 
+            plt.close(fig_pie)
+            del fig_pie
+            del ax_pie
+            gc.collect()
+
         st.markdown("---")
 
         # =========================
@@ -1176,6 +1180,11 @@ elif tarea == "Detección de Muros Confinados":
                 )
 
             st.pyplot(fig_bar)
+
+            plt.close(fig_bar)
+            del fig_bar
+            del ax_bar
+            gc.collect()
 
         # =========================
         # 9. GUIAS
