@@ -64,12 +64,6 @@ def cargar_clasificador_ladrillo():
     return load_model('model_CL.h5', safe_mode=False)
 
 
-model_segmentador = cargar_segmentador()
-model_clasificador_grieta = cargar_clasificador_grieta()
-model_detector_murosc = cargar_detector_murosc()
-model_clasificador_ladrillo = cargar_clasificador_ladrillo()
-
-
 # ==================================================
 # FUNCION GRAD - CAM
 # ==================================================
@@ -213,6 +207,12 @@ mostrar_memoria()
 
 # ======== Interfaz ========
 if tarea == "Segmentación de Grietas":
+
+    # Liberar modelos que NO se usarán
+    cargar_detector_murosc.clear()
+    cargar_clasificador_ladrillo.clear()
+    model_segmentador = cargar_segmentador()
+    model_clasificador_grieta = cargar_clasificador_grieta()
 
     if subcampo == "Fotos tomadas desde cerca":
 
@@ -804,6 +804,13 @@ if tarea == "Segmentación de Grietas":
 
 elif tarea == "Detección de Muros Confinados":
 
+    # Liberar modelos que NO se usarán
+    cargar_segmentador.clear()
+    cargar_clasificador_grieta.clear()
+    
+    model_detector_murosc = cargar_detector_murosc()
+    model_clasificador_ladrillo = cargar_clasificador_ladrillo()
+
     st.title("Detección, Conteo y Clasificación Automática de Muros Confinados con Unidades Tubulares")
 
     st.markdown("""
@@ -1156,22 +1163,23 @@ elif tarea == "Detección de Muros Confinados":
         # =========================
         # 9. VISUALIZACIÓN DESLIZABLE DE MUROS
         # =========================
-        st.markdown("## Detalle de Muros Confinados Detectados")
-
-        with st.container():
-            for i, (box, score) in enumerate(zip(boxes_L, labels), start=1):
-
-                x1, y1, x2, y2 = map(int, box)
-                crop = padded[y1:y2, x1:x2]
-
-                if crop.size == 0:
-                    continue
-
-                clase = "Unidad Tubular Detectada" if score >= umbral_clasificador else "Unidad Tubular no Detectada"
-                color = "red" if score >= umbral_clasificador else "green"
-
-                st.caption(f"### Muro Confinado {i} - {clase} ({score:.2f})")
-                st.image(crop, width=800)
+        st.markdown("## Muros detectados (vista optimizada)")
+        muro_sel = st.selectbox("Selecciona muro",list(range(1, len(boxes_L)+1)))
+        x1, y1, x2, y2 = map(int, boxes_L[muro_sel-1])
+        crop = padded[y1:y2, x1:x2]
+        score = float(labels[muro_sel-1])
+        relacion_LA = float(relaciones_LH[muro_sel-1])
+        
+        # Clasificación
+        clase = "Muro Confinado con Ladrillo Tubular (Pandereta)" if score >= umbral_clasificador else "Muro Confinado sin Ladrillo Tubular"
+        st.image(crop, width=800)
+        st.markdown(f"""
+        ### Información del Muro
+        - **ID Muro:** {muro_sel}  
+        - **Clasificación:** {clase}  
+        - **Score de clasificación:** {score:.2f}  
+        - **Relación L/A (Longitud/Altura):** {relacion_LA:.2f}  
+        """)
 
         st.markdown("---")
         st.markdown("#### Referencias usadas para la tabla y YOLO11l :")
