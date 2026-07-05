@@ -1170,6 +1170,8 @@ elif tarea == "Detección de Muros Confinados":
                     va="bottom",
                     fontsize=8,
                 )
+            
+            st.pyplot(fig_bar)
 
         # =========================
         # 9. GUIAS
