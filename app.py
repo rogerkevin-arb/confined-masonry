@@ -1129,22 +1129,18 @@ elif tarea == "Detección de Muros Confinados":
         # =========================
         # 9. VISUALIZACIÓN DESLIZABLE DE MUROS
         # =========================
-        st.markdown("## Detalle de Muros Confinados Detectados")
-
-        with st.container():
-            for i, (box, score) in enumerate(zip(boxes_L, labels), start=1):
-
-                x1, y1, x2, y2 = map(int, box)
-                crop = padded[y1:y2, x1:x2]
-
-                if crop.size == 0:
-                    continue
-
-                clase = "Unidad Tubular Detectada" if score >= umbral_clasificador else "Unidad Tubular no Detectada"
-                color = "red" if score >= umbral_clasificador else "green"
-
-                st.markdown(f"### Muro Confinado {i} - {clase} ({score:.2f})")
-                st.image(crop, width=800)
+        st.markdown("## Muros detectados (vista optimizada)")
+        
+        muro_sel = st.selectbox(
+            "Selecciona muro",
+            list(range(1, len(boxes_L)+1))
+        )
+        
+        x1, y1, x2, y2 = map(int, boxes_L[muro_sel-1])
+        crop = padded[y1:y2, x1:x2]
+        
+        st.image(crop, width=400)
+        st.markdown(f"Score: {labels[muro_sel-1]:.2f}")
 
         st.markdown("---")
         st.markdown("#### Referencias usadas para la tabla y YOLO11l :")
