@@ -478,7 +478,22 @@ if tarea == "Segmentación de Grietas":
             st.markdown("""
             1. BRE Digest 251. Driscoll, R. (1995). *Assessment of Damage in Low-Rise Buildings, with Particular Reference to Progressive Foundation Movement*, United Kingdom.
             2. Astroza, M. y Figueroa, S. (2000). *Escalas para calificar los daños sísmicos en los muros de edificios de albañilería*. XXIX Jornadas Sudamericanas de Ingeniería Estructural, Montevideo, Uruguay.
-            """)      
+            """)
+            
+            image.close()
+            del image
+            del resized_image
+            del img_input
+            del prediction
+            del heatmap
+            del gradcam_img
+            del skeleton
+            del dist_transform
+            del crack_width_map
+            del mask
+            if img_escala_rgb is not None:
+                del img_escala_rgb
+            gc.collect()
 
     elif subcampo == "Fotos tomadas a mayor distancia":
 
@@ -799,8 +814,19 @@ if tarea == "Segmentación de Grietas":
             1. BRE Digest 251. Driscoll, R. (1995). *Assessment of Damage in Low-Rise Buildings, with Particular Reference to Progressive Foundation Movement*, United Kingdom.
             2. Astroza, M. y Figueroa, S. (2000). *Escalas para calificar los daños sísmicos en los muros de edificios de albañilería*. XXIX Jornadas Sudamericanas de Ingeniería Estructural, Montevideo, Uruguay.
             """)
-
-
+            image.close()
+            del image
+            del img_original
+            del img_resize
+            del img_overlay
+            del mascara_global
+            del mask
+            del skeleton
+            del dist_transform
+            del crack_width_map
+            if img_escala_rgb is not None:
+                del img_escala_rgb
+            gc.collect()
 
 elif tarea == "Detección de Muros Confinados":
 
@@ -1170,4 +1196,21 @@ elif tarea == "Detección de Muros Confinados":
         1. C. y S. Ministerio de Vivienda, “Norma Técnica E.070 Albañilería,” Lima, Perú, 2020. 
         2. Ultralytics YOLO11 | Ultralytics Docs,” Ultralytics Docs. 
         """)
+
+        image.close()
+        
+        del image
+        del img
+        del padded
+        del img_1024
+        del output
+        
+        del boxes_1024
+        del boxes_L
+        del conf_yolo_boxes
+        
+        del labels
+        del relaciones_LH
+        
+        gc.collect()
 
