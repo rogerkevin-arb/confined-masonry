@@ -16,8 +16,6 @@ import gc
 import tensorflow.keras.backend as K
 import matplotlib.cm as cm
 
-gc.collect()
-tf.keras.backend.clear_session()
 
 # ======== Funciones personalizadas ========
 def Weighted_Cross_Entropy(beta):
@@ -54,6 +52,26 @@ model_segmentador = cargar_segmentador()
 model_clasificador_grieta = cargar_clasificador_grieta()
 model_detector_murosc = cargar_detector_murosc()
 model_clasificador_ladrillo = cargar_clasificador_ladrillo()
+
+
+# ==================================================
+# MONITOR DE MEMORIA
+# ==================================================
+import psutil
+import os
+import gc
+
+def revisar_memoria():
+    process = psutil.Process(os.getpid())
+    ram_total = psutil.virtual_memory().total / (1024**2)
+    ram_usada = process.memory_info().rss / (1024**2)
+    st.sidebar.caption(f"RAM: {ram_usada:.0f} / {ram_total:.0f} MB")
+    # Reiniciar cuando supere el 70%
+    if ram_usada > 0.70 * ram_total:
+        st.warning("⚠️ La memoria está casi llena. La aplicación se reiniciará automáticamente para liberar recursos.")
+        gc.collect()
+        st.session_state.clear()
+        st.rerun()
 
 # ==================================================
 # FUNCION GRAD - CAM
@@ -212,7 +230,7 @@ if tarea == "Segmentación de Grietas":
 
         # Parámetros
         st.markdown("### Parámetros")
-        umbral = st.slider("Umbral para binarización de la máscara predicha", min_value=0.0, max_value=1.0, value=0.5, step=0.01)
+        umbral = st.slider("Umbral de segmentación", min_value=0.0, max_value=1.0, value=0.5, step=0.01)
 
         ancho_mm = st.number_input("Ancho real de la escala cuadrada (mm) - Método 1", min_value=1.0, max_value=1000.0, value=20.0, step=1.0)
         usar_escala_verde = st.checkbox("Activar detección automática de escala verde",value=True)
@@ -437,16 +455,12 @@ if tarea == "Segmentación de Grietas":
                     )
 
             st.markdown("---")
-
             st.markdown("#### Referencias usadas para las tablas de clasificación de daños :")
-
             st.markdown("""
             1. BRE Digest 251. Driscoll, R. (1995). *Assessment of Damage in Low-Rise Buildings, with Particular Reference to Progressive Foundation Movement*, United Kingdom.
-
             2. Astroza, M. y Figueroa, S. (2000). *Escalas para calificar los daños sísmicos en los muros de edificios de albañilería*. XXIX Jornadas Sudamericanas de Ingeniería Estructural, Montevideo, Uruguay.
-
-            """)
-
+            """)      
+            revisar_memoria()
 
     elif subcampo == "Fotos tomadas a mayor distancia":
 
@@ -493,8 +507,8 @@ if tarea == "Segmentación de Grietas":
             )
 
         st.markdown("### Parámetros")
-        umbral_clasificador = st.slider("Umbral de confianza del clasificador de grietas",min_value=0.0,max_value=1.0,value=0.50, step=0.01)
-        umbral = st.slider("Umbral para segmentación", min_value=0.0, max_value=1.0, value=0.5, step=0.01, key="distancia_umbral")
+        umbral_clasificador = st.slider("Umbral de clasificación",min_value=0.0,max_value=1.0,value=0.50, step=0.01)
+        umbral = st.slider("Umbral de segmentación", min_value=0.0, max_value=1.0, value=0.5, step=0.01, key="distancia_umbral")
 
         ancho_mm = st.number_input("Ancho real de la escala cuadrada (mm) - Método 1", min_value=1.0, max_value=1000.0, value=20.0, step=1.0, key="distancia_plantilla")
         usar_escala_verde = st.checkbox("Activar detección automática de escala verde",value=True)
@@ -749,6 +763,7 @@ if tarea == "Segmentación de Grietas":
             1. BRE Digest 251. Driscoll, R. (1995). *Assessment of Damage in Low-Rise Buildings, with Particular Reference to Progressive Foundation Movement*, United Kingdom.
             2. Astroza, M. y Figueroa, S. (2000). *Escalas para calificar los daños sísmicos en los muros de edificios de albañilería*. XXIX Jornadas Sudamericanas de Ingeniería Estructural, Montevideo, Uruguay.
             """)
+            revisar_memoria()
 
 
 elif tarea == "Detección de Muros Confinados":
@@ -768,8 +783,8 @@ elif tarea == "Detección de Muros Confinados":
     """)
 
     st.markdown("### Parámetros")
-    conf_yolo = st.slider("Umbral de confianza del detector YOLO",min_value=0.0,max_value=1.0, value=0.80,step=0.01)
-    umbral_clasificador = st.slider("Umbral del clasificador para unidades de albañilería",min_value=0.0,max_value=1.0,value=0.50,step=0.01)
+    conf_yolo = st.slider("Umbral de confianza del detector YOLO11l",min_value=0.0,max_value=1.0, value=0.80,step=0.01)
+    umbral_clasificador = st.slider("Umbral del clasificador",min_value=0.0,max_value=1.0,value=0.50,step=0.01)
     st.markdown("### Filtro de Muros Redundantes % (Opcional)")
     porcentaje_minimo = st.slider("Eliminar detecciones con área menor al (%) del muro más grande",min_value=0,max_value=100,value=25,step=1)
 
@@ -1110,3 +1125,4 @@ elif tarea == "Detección de Muros Confinados":
         1. C. y S. Ministerio de Vivienda, “Norma Técnica E.070 Albañilería,” Lima, Perú, 2020. 
         2. Ultralytics YOLO11 | Ultralytics Docs,” Ultralytics Docs. 
         """)
+        revisar_memoria()
