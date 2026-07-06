@@ -23,7 +23,7 @@ import psutil, os
 # CONTROL DE MEMORIA
 # =========================
 
-def check_memory(limit_mb=2300):
+def check_memory(limit_mb=2200):
     process = psutil.Process(os.getpid())
     ram_mb = process.memory_info().rss / 1024**2
 
@@ -219,7 +219,7 @@ elif tarea == "Detección de Muros Confinados":
     subcampo = None
 
 mostrar_memoria()
-check_memory(2300)
+check_memory(2200)
 
 # ======== Interfaz ========
 if tarea == "Segmentación de Grietas":
