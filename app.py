@@ -19,14 +19,29 @@ import matplotlib.cm as cm
 import hashlib
 import psutil, os
 
-# ======== Funciones personalizadas ========
+# =========================
+# CONTROL DE MEMORIA
+# =========================
+
+def check_memory(limit_mb=2300):
+    process = psutil.Process(os.getpid())
+    ram_mb = process.memory_info().rss / 1024**2
+
+    if ram_mb > limit_mb:
+        st.error("🚨 Reiniciando app por exceso de memoria...")
+        st.cache_data.clear()
+        st.cache_resource.clear()
+        gc.collect()
+        st.rerun()
+
+# ======== mostrar memoria ========
 def mostrar_memoria():
     proceso = psutil.Process(os.getpid())
     ram_mb = proceso.memory_info().rss / 1024**2
 
     st.sidebar.write(f"🧠 RAM usada: {ram_mb:.0f} MB")
 
-    if ram_mb > 800:
+    if ram_mb > 1600:
         st.sidebar.error("⚠️ Muy cerca del límite")
     elif ram_mb > 600:
         st.sidebar.warning("Cuidado con la memoria")
@@ -204,6 +219,7 @@ elif tarea == "Detección de Muros Confinados":
     subcampo = None
 
 mostrar_memoria()
+check_memory(2300)
 
 # ======== Interfaz ========
 if tarea == "Segmentación de Grietas":
