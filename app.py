@@ -1207,7 +1207,7 @@ elif tarea == "Detección de Muros Confinados":
                 clase_texto = (
                     "Muro confinado con unidades tubulares (Pandereta)"
                     if es_tubular
-                    else "Muro confinado sin unidades tubulares (Pandereta)"
+                    else "Muro confinado sin unidades tubulares"
                 )
             
                 st.markdown(
