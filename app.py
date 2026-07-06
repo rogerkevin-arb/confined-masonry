@@ -24,15 +24,34 @@ import psutil, os
 # =========================
 
 def check_memory(limit_mb=2200):
+    import psutil, os, gc
+    import streamlit as st
+    import tensorflow as tf
+
     process = psutil.Process(os.getpid())
     ram_mb = process.memory_info().rss / 1024**2
 
     if ram_mb > limit_mb:
-        st.error("🚨 Reiniciando app por exceso de memoria...")
+        st.warning(f"🚨 Reiniciando app por exceso de memoria...")
+
+        # 1. limpiar cachés de Streamlit
         st.cache_data.clear()
         st.cache_resource.clear()
+
+        # 2. limpiar session state (MUY importante)
+        for key in list(st.session_state.keys()):
+            del st.session_state[key]
+
+        # 3. limpiar TensorFlow
+        tf.keras.backend.clear_session()
+
+        # 4. garbage collector agresivo
         gc.collect()
+        gc.collect()
+
+        # 5. reinicio Streamlit
         st.rerun()
+
 
 # ======== mostrar memoria ========
 def mostrar_memoria():
