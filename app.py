@@ -1188,18 +1188,39 @@ elif tarea == "Detección de Muros Confinados":
         st.markdown("## Detalle de Muros Confinados Detectados")
 
         with st.container():
-            for i, (box, score) in enumerate(zip(boxes_L, labels), start=1):
-
+            for i, (box, score, conf) in enumerate(zip(boxes_L, labels, conf_yolo_boxes), start=1):
+            
                 x1, y1, x2, y2 = map(int, box)
                 crop = padded[y1:y2, x1:x2]
-
+            
                 if crop.size == 0:
                     continue
-
-                clase = "Unidad Tubular Detectada" if score >= umbral_clasificador else "Unidad Tubular no Detectada"
-                color = "red" if score >= umbral_clasificador else "green"
-
-                st.caption(f"### Muro Confinado {i} - {clase} ({score:.2f})")
+            
+                # Relación L/A
+                ancho = x2 - x1
+                alto = y2 - y1
+                relacion = (ancho / alto) if alto > 0 else 0
+            
+                # Clasificación
+                es_tubular = score >= umbral_clasificador
+            
+                clase_texto = (
+                    "Muro confinado con unidades tubulares (Pandereta)"
+                    if es_tubular
+                    else "Muro confinado sin unidades tubulares (Pandereta)"
+                )
+            
+                st.markdown(
+                    f"""
+                    ### Muro {i}
+            
+                    **Tipo:** {clase_texto}  
+                    **Score clasificación:** `{score:.3f}`  
+                    **Confianza YOLO:** `{conf:.3f}`  
+                    **Relación L/A:** `{relacion:.2f}`
+                    """
+                )
+            
                 st.image(crop, width=800)
 
 
