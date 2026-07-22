@@ -2,7 +2,6 @@ import streamlit as st
 from PIL import Image, ImageOps
 import numpy as np
 import tensorflow as tf
-from ultralytics import YOLO
 import cv2
 import io
 import matplotlib.pyplot as plt
@@ -11,6 +10,7 @@ from tensorflow.keras.layers import Layer
 from skimage.morphology import skeletonize
 import base64
 from io import BytesIO
+from ultralytics import YOLO
 import gc
 
 import tensorflow.keras.backend as K
