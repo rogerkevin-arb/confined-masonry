@@ -6,3 +6,4 @@ opencv-python-headless
 ultralytics
 matplotlib
 scikit-image
+psutil
