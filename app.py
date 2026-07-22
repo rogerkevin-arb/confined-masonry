@@ -10,7 +10,7 @@ from tensorflow.keras.layers import Layer
 from skimage.morphology import skeletonize
 import base64
 from io import BytesIO
-from ultralytics import YOLO
+#cfrom ultralytics import YOLO
 import gc
 
 import tensorflow.keras.backend as K
@@ -90,8 +90,8 @@ def cargar_clasificador_grieta():
     return load_model('model_CG.h5', safe_mode=False)
 
 @st.cache_resource
-def cargar_detector_murosc():
-    return YOLO("best.pt")
+#def cargar_detector_murosc():
+ #   return YOLO("best.pt")
 
 @st.cache_resource
 def cargar_clasificador_ladrillo():
