@@ -3,6 +3,6 @@ pillow
 numpy
 tensorflow==2.20.0
 opencv-python-headless
-ultralytics
+ultralytics==8.3.170
 matplotlib
 scikit-image
